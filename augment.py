@@ -83,7 +83,7 @@ def augmenter(image, size, coords=0):
 
 
   if coords != 0:
-    coords = pointTransform(coords, size=224, scale=scale,angle=angle, shear=shear,translate = translate)
+    coords = pointTransform(coords, size=size, scale=scale,angle=angle, shear=shear,translate = translate)
     image = transform_image(image.copy(), size, scale=scale,angle=angle, shear=shear, enhance=enhance, blur = blur, translate = translate)
     return image, coords
   else:
