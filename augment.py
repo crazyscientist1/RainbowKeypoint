@@ -75,11 +75,11 @@ def pointTransform(stackedCoords, size, angle = 0, scale = 1, shear = 0, transla
 def augmenter(image, size, coords=0):
 
   angle = random.randint(0,360)
-  shear = random.randint(-3000,3000)/10000
+  shear = random.randint(-2000,2000)/10000
   enhance = random.randint(5000,15000)/10000
   blur = random.randint(5000,15000)/10000
-  scale = random.randint(7500,12500)/10000
-  translate = (random.randint(-25,25), random.randint(-25,25))
+  scale = random.randint(9000,11000)/10000
+  translate = (random.randint(-15,15), random.randint(-15,15))
 
 
   if coords != 0:
