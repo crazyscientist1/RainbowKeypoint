@@ -4,6 +4,7 @@ import keras
 from keras import layers
 from keras import Input
 import numpy as np
+from itertools import product
 
 def hungarian_algorithm(cost_matrix):
 
@@ -11,22 +12,17 @@ def hungarian_algorithm(cost_matrix):
 
     return row_ind.astype(np.int64), col_ind.astype(np.int64)
 
-def bipartite_loss(coords1, coords2):
 
-    coords2 = coords2.to_tensor()
+def bipartite_loss(yPred, yTrue):
+    costMatrix = np.zeros((len(yPred), len(yTrue)))
+    for x, y in product(range((len(yPred))), range(len(yTrue))):
+        print(x,y)
+        costMatrix[x,y] = np.sum(np.square(yPred[x]-yTrue[y]))
 
-    coords1 = tf.cast(coords1, tf.float32)
-    coords2 = tf.cast(coords2, tf.float32)
-
-    coords1_expanded = tf.expand_dims(coords1, axis=1)  # shape: (num_points1, 1, 2)
-    coords2_expanded = tf.expand_dims(coords2, axis=0)  # shape: (1, num_points2, 2)
-
-    cost_matrix = tf.reduce_sum(tf.square(coords1_expanded - coords2_expanded), axis=-1)
-
-    row_ind, col_ind = tf.py_function(hungarian_algorithm, [cost_matrix], [tf.int64, tf.int64])
+    row_ind, col_ind = tf.py_function(hungarian_algorithm, [costMatrix], [tf.int64, tf.int64])
     indices = tf.stack([row_ind, col_ind], axis=1)
 
-    total_sum = tf.reduce_mean(tf.gather_nd(cost_matrix, indices))
+    total_sum = tf.reduce_mean(tf.gather_nd(costMatrix, indices))
 
     return total_sum
 

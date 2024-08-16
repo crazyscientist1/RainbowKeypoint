@@ -1,6 +1,5 @@
 from PIL import Image, ImageEnhance, ImageOps, ImageFilter, ImageDraw
 import numpy as np
-import tensorflow as tf
 import math
 import random
 
@@ -73,7 +72,6 @@ def pointTransform(stackedCoords, size, angle = 0, scale = 1, shear = 0, transla
   return coords
 
 def augmenter(image, size, coords=0):
-
   angle = random.randint(0,360)
   shear = random.randint(-2000,2000)/10000
   enhance = random.randint(5000,15000)/10000
@@ -89,3 +87,33 @@ def augmenter(image, size, coords=0):
   else:
     image = transform_image(image.copy(), size, scale=scale,angle=angle, shear=shear, enhance=enhance, blur = blur, translate = translate)
     return image
+
+def draw_labelmap(img, pt, sigma, type='Gaussian'):
+      # Adopted from https://github.com/anewell/pose-hg-train/blob/master/src/pypose/draw.py
+
+      ul = [int(pt[0] - 3 * sigma), int(pt[1] - 3 * sigma)]
+      br = [int(pt[0] + 3 * sigma + 1), int(pt[1] + 3 * sigma + 1)]
+
+      if (ul[0] >= img.shape[1] or ul[1] >= img.shape[0] or
+              br[0] < 0 or br[1] < 0):
+          return img
+
+      size = 6 * sigma + 1
+      x = np.arange(0, size, 1, float)
+      y = x[:, np.newaxis]
+      x0 = y0 = size // 2
+
+      if type == 'Gaussian':
+          g = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+      elif type == 'Cauchy':
+          g = sigma / (((x - x0) ** 2 + (y - y0) ** 2 + sigma ** 2) ** 1.5)
+
+      g_x = max(0, -ul[0]), min(br[0], img.shape[1]) - ul[0]
+      g_y = max(0, -ul[1]), min(br[1], img.shape[0]) - ul[1]
+
+      img_x = max(0, ul[0]), min(br[0], img.shape[1])
+      img_y = max(0, ul[1]), min(br[1], img.shape[0])
+
+      img[img_y[0]:img_y[1], img_x[0]:img_x[1]] = g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
+
+      return img
