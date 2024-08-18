@@ -5,8 +5,6 @@ import os
 import json
 from PIL import Image
 import numpy as np
-import napari
-
 
 class DataHandler():
     def unzip(self):
@@ -63,10 +61,10 @@ class DataHandler():
 
         return images, labels
     def augmentEpoch(self, epochSize):
-        max_length = max(len(sublist) for sublist in self.labels)
+        # max_length = max(len(sublist) for sublist in self.labels)
 
         outImg = np.empty( (0,) + np.shape(self.images[0]))
-        outLabels = np.empty( (0,) + (max_length,) + Variables.OUT_SIZE )
+        outLabels = []
 
 
 
@@ -76,12 +74,12 @@ class DataHandler():
 
             outImg = np.vstack((outImg, np.expand_dims(img, axis=0)))
 
-            labelGrid = np.zeros((max_length,) + Variables.OUT_SIZE)
+            labelGrid = np.zeros((len(label),) + Variables.OUT_SIZE)
             for i, coords in enumerate(label):
                 out = np.array(coords) * Variables.OUT_SIZE[0]
                 labelGrid[i] = draw_labelmap(labelGrid[i], out.astype(int), sigma = Variables.SIGMA)
 
-            outLabels = np.vstack((outLabels, np.expand_dims(labelGrid, axis = 0)))
+            outLabels.append(labelGrid)
 
 
         return outImg, outLabels
