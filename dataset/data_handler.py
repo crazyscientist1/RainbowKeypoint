@@ -5,6 +5,10 @@ import os
 import json
 from PIL import Image
 import numpy as np
+<<<<<<< HEAD
+=======
+import matplotlib.pyplot as plt
+>>>>>>> cc684ca (adding graph optimization)
 
 class DataHandler():
     def unzip(self):
@@ -61,6 +65,7 @@ class DataHandler():
 
         return images, labels
     def augmentEpoch(self, epochSize):
+<<<<<<< HEAD
         # max_length = max(len(sublist) for sublist in self.labels)
 
         outImg = np.empty( (0,) + np.shape(self.images[0]))
@@ -84,6 +89,58 @@ class DataHandler():
 
         return outImg, outLabels
 
+=======
+        if Variables.TENSOR_TYPE == "RAGGED":
+            #Input data must be fed like this: model.fit(data[0], tf.ragged.constant(data[1]), batch_size=5,epochs=2)
+            #And raggedLoss must be used rather than straight loss
+    
+            outImg = np.empty( (0,) + np.shape(self.images[0]))
+            outLabels = []
+    
+    
+    
+            for i in range(epochSize):
+    
+                img, label = augmenter(self.images[i % len(self.images)], Variables.INP_SIZE[0], self.labels[i % len(self.images)])
+    
+                outImg = np.vstack((outImg, np.expand_dims(img, axis=0)))
+    
+                labelGrid = np.zeros((len(label),) + Variables.OUT_SIZE)
+                for i, coords in enumerate(label):
+                    out = np.array(coords) * Variables.OUT_SIZE[0]
+                    labelGrid[i] = draw_labelmap(labelGrid[i], out.astype(int), sigma = Variables.SIGMA)
+    
+                outLabels.append(labelGrid)
+    
+    
+            return outImg, outLabels
+            
+        if Variables.TENSOR_TYPE == "STRAIGHT":
+            max_length = max(len(sublist) for sublist in self.labels)
+
+            outImg = np.empty( (0,) + np.shape(self.images[0]))
+            outLabels = np.empty( (0,) + (max_length,) + Variables.OUT_SIZE)
+    
+    
+    
+            for i in range(epochSize):
+    
+                img, label = augmenter(self.images[i % len(self.images)], Variables.INP_SIZE[0], self.labels[i % len(self.images)])
+    
+                outImg = np.vstack((outImg, np.expand_dims(img, axis=0)))
+    
+                labelGrid = np.full(((max_length,) + Variables.OUT_SIZE), -5.0) #Arbitrary value which will be so bad that it wont be considered in bipartite loss
+                for i, coords in enumerate(label):
+                    out = np.array(coords) * Variables.OUT_SIZE[0]
+                    labelGrid[i] = draw_labelmap(np.zeros(Variables.OUT_SIZE), out.astype(int), sigma = Variables.SIGMA)
+                    
+                
+                outLabels = np.vstack((outLabels, np.expand_dims(labelGrid, axis=0)))
+    
+    
+            return outImg, outLabels
+    
+>>>>>>> cc684ca (adding graph optimization)
     def __init__(self):
         self.unzip()
 
